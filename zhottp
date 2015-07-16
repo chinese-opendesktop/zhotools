@@ -1,8 +1,9 @@
 #!/bin/bash
-_ABOUT="Zhongwen Text to Phonetic, GPL (c) Wei-Lun Chao <william.chao@ossii.com.tw>, 2010."
+_ABOUT="Zhongwen Text to Phonetic"
 _USAGE="Usage: zhottp [-h] CHARACTERS"
-_VERSION="0.2"
-_DATAFILE="/usr/share/zhotools/zhottp.ssv" #modified from tsi.src of libchewing
+_DATAFILE="/usr/share/zhotools/zhottp.sqlite" #modified from tsi.src of libchewing
+
+_MAXLENGTH=$(sqlite3 $_DATAFILE "SELECT mixlength FROM mixlength ;")
 
 if test -z "$1" -o "$1" == "-h" ; then
   echo "$_ABOUT"
@@ -13,6 +14,7 @@ else
 fi
 
 function _match {
+  _MAXLENGTH=$2
   if test "$1" ; then
     _BESTI=0
     _BESTJ=0
@@ -20,10 +22,11 @@ function _match {
     _MAXI=$((${#1}-1))
     for i in `seq 0 $_MAXI` ; do
       _MAXJ=$((${#1}-$i))
+      if test $_MAXJ -gt $_MAXLENGTH ; then _MAXJ=$_MAXLENGTH ; fi
       _MINJ=$(($_BESTJ+1))
       for j in `seq $_MAXJ -1 $_MINJ` ; do
         _CHARS=${1:$i:$j}
-        _NOTE=`grep -m 1 "^$_CHARS " $_DATAFILE | cut -d " " -f 2-`
+        _NOTE=$(sqlite3 $_DATAFILE "SELECT phonetic FROM txt2pho WHERE text = '$_CHARS';")
         if test "$_NOTE" ; then
           _BESTI=$i
           _BESTJ=$j
@@ -31,16 +34,17 @@ function _match {
           break
         fi
       done
+      if test $_BESTJ -eq $_MAXLENGTH ; then break ; fi
     done
     if test $_BESTJ -eq 0 ; then
       echo -n "$1"
     else
       if test "${1:0:$_BESTI}" ; then
-        echo -n `_match "${1:0:$_BESTI}"`" "
+        echo -n `_match "${1:0:$_BESTI}" $(($_BESTJ-1))`" "
       fi
       echo -n "$_BESTNOTE"
       if test "${1:$_BESTI+$_BESTJ}" ; then
-        echo -n " "`_match "${1:$_BESTI+$_BESTJ}"`
+        echo -n " "`_match "${1:$_BESTI+$_BESTJ}" $_BESTJ`
       fi
     fi
   else
@@ -48,4 +52,4 @@ function _match {
   fi
 }
 
-echo `_match "$_INPUT"`
+echo `_match "$_INPUT" $_MAXLENGTH`

@@ -1,16 +1,26 @@
-VERSION=0.3
-DESTDIR=
-PREFIX=/usr
-PACKAGE=zhotools
+VERSION = 0.4
+DESTDIR =
+PREFIX = /usr
+PACKAGE = zhotools
 
-all:
+.PHONY: all
+all: zhocompose.sqlite zhoortho.sqlite zhorelate.sqlite zhotrans.sqlite zhottp.sqlite
 
-install:
+%.sqlite:
+	bash ssv2sqlite.sh $*
+
+.PHONY: clean
+clean:
+	rm -f *.sqlite
+
+.PHONY: install
+install: all
 	install -d $(DESTDIR)$(PREFIX)/bin
 	install -m 755 zhocompose zhorelate zhottp zhotrans zhoortho $(DESTDIR)$(PREFIX)/bin
 	install -d $(DESTDIR)$(PREFIX)/share/$(PACKAGE)
-	install -m 644 *.ssv $(DESTDIR)$(PREFIX)/share/$(PACKAGE)
+	install -m 644 *.sqlite $(DESTDIR)$(PREFIX)/share/$(PACKAGE)
 
+.PHONY: uninstall
 uninstall:
 	rm -f $(DESTDIR)$(PREFIX)/bin/zhocompose
 	rm -f $(DESTDIR)$(PREFIX)/bin/zhorelate

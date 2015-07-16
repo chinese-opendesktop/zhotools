@@ -1,25 +1,23 @@
 #!/bin/bash
-_ABOUT="Zhongwen Orthograpy, GPL (c) Wei-Lun Chao <william.chao@ossii.com.tw>, 2011."
+_ABOUT="Zhongwen Orthograpy"
 _USAGE="Usage: zhoortho [-h] CHARACTERS..."
-_VERSION="0.1"
-_DATAFILE="/usr/share/zhotools/zhoortho.ssv"
+_DATAFILE="/usr/share/zhotools/zhoortho.sqlite"
 
 if test -z "$1" -o "$1" == "-h" ; then
-  echo $_ABOUT
-  echo $_USAGE
+  echo "$_ABOUT"
+  echo "$_USAGE"
   exit
 else
   _INPUT=$1
 fi
 
-_OUTPUTS=""
+_CONDITION=""
 for i in 1 2 3 4 ; do
   if test $i -gt ${#_INPUT} ; then
     break
   else
-    _BEGIN=$((${#_INPUT}-$i))
-    _OUTPUT=`grep "^${_INPUT:$_BEGIN} " $_DATAFILE`
-    _OUTPUTS+="\n$_OUTPUT"
+    _CONDITION+=" OR mistake = '${_INPUT:$((${#_INPUT}-$i))}'"
   fi
 done
-echo -e "$_OUTPUTS" | grep -v '^$'
+_CONDITION=${_CONDITION# OR }
+sqlite3 -separator " " $_DATAFILE "SELECT * FROM ortho WHERE $_CONDITION ORDER BY LENGTH(mistake);"

@@ -1,20 +1,16 @@
 #!/bin/bash
-_ABOUT="Zhongwen Relate, GPL (c) gene.hsu <gene.hsu@ossii.com.tw>, 2009."
-_USAGE="Usage: zhorelate [-h|-V] CHARACTERS"
-_VERSION="0.1"
-_DATAFILE="/usr/share/zhotools/zhorelate.ssv"
+_ABOUT="Zhongwen Relate"
+_USAGE="Usage: zhorelate [-h] CHARACTERS"
+_DATAFILE="/usr/share/zhotools/zhorelate.sqlite"
 
 
 if [ -z "$1" ] ;then   #輸入字為空
-  echo $_ABOUT
-  echo $_USAGE
+  echo "$_ABOUT"
+  echo "$_USAGE"
   exit          
 elif test "$1" == "-h" ; then
-  echo $_ABOUT
-  echo $_USAGE
-  exit
-elif test "$1" == "-V" ; then
-  echo $_VERSION
+  echo "$_ABOUT"
+  echo "$_USAGE"
   exit
 fi
 
@@ -25,9 +21,9 @@ _LNWORD=${_SUMWORD:$_LN}
 if test "$_LNWORD" == "#" ; then
   exit
 fi
-_ALLWORD=`grep -m 1 "^$_LNWORD" $_DATAFILE`
+_ALLWORD=`sqlite3 $_DATAFILE "SELECT fellows FROM relate WHERE leader = '$_LNWORD';"`
 if [ -z "$_ALLWORD" ] ;then
   exit 1
 fi
-_ALLWORD=${_ALLWORD#"$_LNWORD"} #刪除輸入字本身
+
 echo $_ALLWORD

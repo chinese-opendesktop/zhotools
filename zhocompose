@@ -1,15 +1,14 @@
 #!/bin/bash
-_ABOUT="Zhongwen Compose, GPL (c) Wei-Lun Chao <william.chao@ossii.com.tw>, 2010."
+_ABOUT="Zhongwen Compose"
 _USAGE="Usage: zhocompose [-h] CHARACTERS"
-_VERSION="0.5"
-_DATAFILE="/usr/share/zhotools/zhocompose.ssv" #modified from cangjie table of cns11643
+_DATAFILE="/usr/share/zhotools/zhocompose.sqlite" #modified from cangjie table of cns11643
 _1COVER="b w"
 _NOCOVER="wg nwf jwj"
 _3COVER="vni kni hni nhi"
 
 if test -z "$1" -o "$1" == "-h" ; then
-  echo $_ABOUT
-  echo $_USAGE
+  echo "$_ABOUT"
+  echo "$_USAGE"
   exit
 else
   _INPUT=$1
@@ -21,9 +20,9 @@ _STROKES=0
 for i in `seq 0 $_MAXINPUT` ; do
   _CHAR=${_INPUT:$i:1}
   if test $i -eq $_MAXINPUT ; then
-    _CHARDATA=`tac $_DATAFILE | grep -m 1 " $_CHAR" | cut -d " " -f 1,3`
+    _CHARDATA=$( sqlite3 -separator " " $_DATAFILE "SELECT comp_code, strokes FROM compose WHERE sqrword = '$_CHAR' ORDER BY regular DESC LIMIT 1;") # default: regular = T
   else
-    _CHARDATA=`grep -m 1 " $_CHAR" $_DATAFILE | cut -d " " -f 1,3`
+    _CHARDATA=$( sqlite3 -separator " " $_DATAFILE "SELECT comp_code, strokes FROM compose WHERE sqrword = '$_CHAR' ORDER BY regular LIMIT 1;") # default: regular = F
   fi
   _CODE[$i]=${_CHARDATA% *}
   _STROKE=${_CHARDATA#* }
@@ -42,12 +41,15 @@ function _get {
     if test $2 -gt 1 ; then
       echo -n ${1:0:$2-1}
     fi
-    if test $_LEN -gt 0 && grep -q ${1:$_LEN-1:1} <<< $_1COVER && grep -vq ${1:$_LEN:1} <<< $_NOCOVER ; then
-      echo -n ${1:$_LEN-1:1}
-    elif test $_LEN -gt 1 && grep -q ${1:$_LEN-2:3} <<< $_3COVER ; then
+    _LEN_L1=${1:$_LEN:1}
+    _LEN_L2=${1:$_LEN-1:1}
+    _LEN_L321=${1:$_LEN-2:3}
+    if test $_LEN -gt 0 -a "${_1COVER/$_LEN_L2/}" != "$_1COVER" -a "${_NOCOVER/$_LEN_L1/}" = "$_NOCOVER" ; then
+      echo -n $_LEN_L2
+    elif test $_LEN -gt 1 -a "${_3COVER/$_LEN_L321/}" != "$_3COVER" ; then
       echo -n "n"
     else
-      echo -n ${1:$_LEN:1}
+      echo -n $_LEN_L1
     fi
   fi
 }
@@ -76,18 +78,18 @@ case $_MAXINPUT in
      ;;
 esac
 if test -n "$_KEY_" -a "$_KEYS" != "$_KEY_" ; then
-  _KEYS=$_KEYS" "$_KEY_
+  _KEYS+=" $_KEY_"
 fi
 
 _OUTPUT=""
 _OUTPUTS=""
 for _KEY in $_KEYS ; do
-  _CHARS=`grep "^$_KEY " $_DATAFILE | cut -d " " -f 2`
+  _CHARS=$( sqlite3 $_DATAFILE "SELECT sqrword FROM compose WHERE comp_code = '$_KEY';")
   _OUTPUTS="$_OUTPUTS $_CHARS"
   for _CHAR in $_CHARS ; do
-    _STROKE=`tac $_DATAFILE | grep -m 1 " $_CHAR" | cut -d " " -f 3`
+    _STROKE=$( sqlite3 $_DATAFILE "SELECT strokes FROM compose WHERE sqrword = '$_CHAR' ORDER BY regular DESC LIMIT 1;" )
     if test "$_STROKE" -eq "$_STROKES" -o "$_STROKE" -eq 0 ; then
-      _OUTPUT=$_OUTPUT" "$_CHAR
+      _OUTPUT+=" $_CHAR"
     fi
   done
 done

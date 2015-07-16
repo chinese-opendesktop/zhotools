@@ -1,8 +1,7 @@
 #!/bin/bash
-_ABOUT="Zhongwen phonetic Transformation, GPL (c) Wei-Lun Chao <william.chao@ossii.com.tw>, 2010."
+_ABOUT="Zhongwen phonetic Transformation"
 _USAGE="Usage: zhotrans [-h] [-t pinyin|braile] BOPOMOFO..."
-_VERSION="0.2"
-_DATAFILE="/usr/share/zhotools/zhotrans.ssv"
+_DATAFILE="/usr/share/zhotools/zhotrans.sqlite"
 
 _TO="pinyin"
 _INPUTS=""
@@ -25,13 +24,10 @@ while test "$1" ; do
   esac
 done
 
-_OUTPUTS=""
+_CONDITION=""
+if [ "$_TO" != "braile" ] ; then _TO="pinyin" ; fi
 for _INPUT in $_INPUTS ; do
-  if test $_TO == "braile" ; then
-    _OUTPUT=`grep "^$_INPUT " $_DATAFILE | cut -d " " -f 3`
-  else
-    _OUTPUT=`grep "^$_INPUT " $_DATAFILE | cut -d " " -f 2`
-  fi
-  _OUTPUTS="$_OUTPUTS $_OUTPUT"
+  _CONDITION+="SELECT $_TO FROM trans WHERE bopomofo = '$_INPUT'; "
 done
-echo "$_OUTPUTS" | sed -e 's/^ //'
+
+echo $(sqlite3 $_DATAFILE "$_CONDITION")
