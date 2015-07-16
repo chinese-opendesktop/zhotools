@@ -1,0 +1,51 @@
+#!/bin/bash
+_ABOUT="Zhongwen Text to Phonetic, GPL (c) Wei-Lun Chao <william.chao@ossii.com.tw>, 2010."
+_USAGE="Usage: zhottp [-h] CHARACTERS"
+_VERSION="0.2"
+_DATAFILE="/usr/share/zhotools/zhottp.ssv" #modified from tsi.src of libchewing
+
+if test -z "$1" -o "$1" == "-h" ; then
+  echo "$_ABOUT"
+  echo "$_USAGE"
+  exit
+else
+  _INPUT="$1"
+fi
+
+function _match {
+  if test "$1" ; then
+    _BESTI=0
+    _BESTJ=0
+    _BESTNOTE=""
+    _MAXI=$((${#1}-1))
+    for i in `seq 0 $_MAXI` ; do
+      _MAXJ=$((${#1}-$i))
+      _MINJ=$(($_BESTJ+1))
+      for j in `seq $_MAXJ -1 $_MINJ` ; do
+        _CHARS=${1:$i:$j}
+        _NOTE=`grep -m 1 "^$_CHARS " $_DATAFILE | cut -d " " -f 2-`
+        if test "$_NOTE" ; then
+          _BESTI=$i
+          _BESTJ=$j
+          _BESTNOTE="$_NOTE"
+          break
+        fi
+      done
+    done
+    if test $_BESTJ -eq 0 ; then
+      echo -n "$1"
+    else
+      if test "${1:0:$_BESTI}" ; then
+        echo -n `_match "${1:0:$_BESTI}"`" "
+      fi
+      echo -n "$_BESTNOTE"
+      if test "${1:$_BESTI+$_BESTJ}" ; then
+        echo -n " "`_match "${1:$_BESTI+$_BESTJ}"`
+      fi
+    fi
+  else
+    echo -n
+  fi
+}
+
+echo `_match "$_INPUT"`

@@ -1,0 +1,16 @@
+Name
+----
+Zhongwen Tools
+
+Discription
+-----------
+Using Zhongwen tables for searching, converting
+and other various purposes.
+
+Install
+-----------
+make install
+
+Author
+------
+MPL (C) OSSII <http://ossii.com.tw/>, 2011.
