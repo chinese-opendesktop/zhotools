@@ -2,22 +2,22 @@ Name
 ----
 Zhongwen Tools
 
-Discription
+Description
 -----------
 Using Zhongwen tables for searching, converting
 and other various purposes.
 
 Install
------------
+-------
 make install
 
 License
-------
-MPL (C) OSSII <http://ossii.com.tw/>, 2011.
+-------
+MPL
 
-Author
-------
+Authors
+-------
 gene.hsu <gene.hsu@ossii.com.tw>, 2009.
 Wei-Lun Chao <william.chao@ossii.com.tw>, 2010.
 Robert Wei <robert.wei@ossii.com.tw>, 2013.
-
+Wei-Lun Chao <bluebat@member.fsf.org>, 2015.

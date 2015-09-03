@@ -1,4 +1,4 @@
-VERSION = 0.4
+VERSION = 0.5
 DESTDIR =
 PREFIX = /usr
 PACKAGE = zhotools
@@ -29,3 +29,10 @@ uninstall:
 	rm -f $(DESTDIR)$(PREFIX)/bin/zhoortho
 	rm -rf $(DESTDIR)$(PREFIX)/share/$(PACKAGE)
 
+rpm:
+	rm -rf $(HOME)/rpmbuild/SOURCES/$(PACKAGE)-$(VERSION)
+	cp -af ../$(PACKAGE) $(HOME)/rpmbuild/SOURCES/$(PACKAGE)-$(VERSION)
+	sed -i 's/@VERSION@/$(VERSION)/' $(HOME)/rpmbuild/SOURCES/$(PACKAGE)-$(VERSION)/$(PACKAGE).spec
+	sed -i '/rpm:/,$$d' $(HOME)/rpmbuild/SOURCES/$(PACKAGE)-$(VERSION)/Makefile
+	tar czvf $(HOME)/rpmbuild/SOURCES/$(PACKAGE)-$(VERSION).tar.gz -C $(HOME)/rpmbuild/SOURCES $(PACKAGE)-$(VERSION)
+	rpmbuild -ta $(HOME)/rpmbuild/SOURCES/$(PACKAGE)-$(VERSION).tar.gz

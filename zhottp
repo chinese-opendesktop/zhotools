@@ -2,7 +2,6 @@
 _ABOUT="Zhongwen Text to Phonetic"
 _USAGE="Usage: zhottp [-h] CHARACTERS"
 _DATAFILE="/usr/share/zhotools/zhottp.sqlite" #modified from tsi.src of libchewing
-
 _MAXLENGTH=$(sqlite3 $_DATAFILE "SELECT mixlength FROM mixlength ;")
 
 if test -z "$1" -o "$1" == "-h" ; then
